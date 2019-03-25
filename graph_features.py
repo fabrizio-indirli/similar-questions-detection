@@ -12,6 +12,14 @@ train = pd.read_csv("./train.csv", names=['row_ID', 'text_a_ID', 'text_b_ID', 't
 test = pd.read_csv("./test.csv", names=['row_ID', 'text_a_ID', 'text_b_ID', 'text_a_text', 'text_b_text', 'have_same_meaning'], index_col=0)
 submission_sample = pd.read_csv("./sample_submission_file.csv")
 
+train_distance_features = pd.read_csv("data/distance_features_train.csv")
+test_distance_features = pd.read_csv("data/distance_features_test.csv")
+
+weight_col = "tfidf_dist_cosine"
+
+train[weight_col] = train_distance_features[weight_col]
+test[weight_col] = test_distance_features[weight_col]
+
 # Hyperparameters
 max_freq = 50
 max_neighbors = 30
@@ -25,10 +33,14 @@ unique_question_ids = all_question_ids.unique()
 def shortestPathShortness(row):
     g.remove_edge(row['text_a_ID'], row['text_b_ID'])
     try:
-        sps = 1 / nx.shortest_path_length(g, row['text_a_ID'], row['text_b_ID'], weight="weight")
+        length = nx.shortest_path_length(g, row['text_a_ID'], row['text_b_ID'], weight="weight")
+        if length != 0:
+            sps = 1 / length
+        else:
+            sps = 0
     except nx.NetworkXNoPath:
         sps=0
-    g.add_edge(row['text_a_ID'], row['text_b_ID'])
+    g.add_edge(row['text_a_ID'], row['text_b_ID'], weight=row[weight_col])
     return sps
 
 def get_neighbors(qid):
@@ -43,11 +55,13 @@ def get_neighbors(qid):
 
 print("Build Graph...")
 nodes = pd.concat([train.text_a_ID, train.text_b_ID, test.text_a_ID,test.text_b_ID]).values
-edges = pd.concat([train[["text_a_ID", "text_b_ID"]], test[["text_a_ID", "text_b_ID"]]]).values
+edges = pd.concat([train[["text_a_ID", "text_b_ID", weight_col]], test[["text_a_ID", "text_b_ID", weight_col]]]).values
 
 g = nx.Graph()
 g.add_nodes_from(nodes)
-g.add_edges_from(edges)
+#g.add_edges_from(edges)
+for e in edges:
+    g.add_edge(int(e[0]), int(e[1]), weight=e[2])
 g.remove_edges_from(g.selfloop_edges())
 
 print("Compute question specific features...")
@@ -78,18 +92,21 @@ closeness_centrality = nx.closeness_centrality(g)
 df_questions["closeness_centrality"] = df_questions.qid.apply(lambda qid: closeness_centrality[qid])
 
 print("--> Compute clustering...") 
-clustering = nx.clustering(g)
+clustering = nx.clustering(g, weight='weight')
 df_questions["clustering"] = df_questions.qid.apply(lambda qid: clustering[qid])
  
 print("--> Compute eigenvector centrality...") 
-eigenvector_centrality = nx.eigenvector_centrality(g)
+eigenvector_centrality = nx.eigenvector_centrality(g, weight='weight')
 df_questions["eigenvector_centrality"] = df_questions.qid.apply(lambda qid: eigenvector_centrality[qid])
 
 
 def preprocess(df):
     df_features = pd.DataFrame(index=df.index)
     df_intermediate = pd.DataFrame(index=df.index)
-
+    
+    print("--> Compute shortest path shortness...")
+    df_features["shortest_path_shortness"] = df.apply(lambda x: shortestPathShortness(x), axis=1)
+        
     print("--> Compute frequency features...")
     df_intermediate["freq_a"] = df_questions.loc[df.text_a_ID, "frequency"].values
     df_intermediate["freq_b"] = df_questions.loc[df.text_b_ID, "frequency"].values
@@ -142,8 +159,6 @@ def preprocess(df):
     df_features["eigenvector_centrality_min"] = df_intermediate[["eigenvector_centrality_a", "eigenvector_centrality_b"]].min(axis=1).apply(lambda x: min(x,100))
     df_features["eigenvector_centrality_max"] = df_intermediate[["eigenvector_centrality_a", "eigenvector_centrality_b"]].max(axis=1).apply(lambda x: min(x,100))
     
-    print("--> Compute shortest path shortness...")
-    df_features["shortest_path_shortness"] = df.apply(lambda x: shortestPathShortness(x), axis=1)
     
     return df_features
 
