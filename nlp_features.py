@@ -1,9 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[1]:
-
-
 import pandas as pd
 import numpy as np
 
@@ -17,25 +11,13 @@ from nltk.stem.porter import PorterStemmer
 from fuzzywuzzy import fuzz
 import distance
 
-
-# In[2]:
-
-
 train = pd.read_csv("./train.csv", names=['row_ID', 'text_a_ID', 'text_b_ID', 'text_a_text', 'text_b_text', 'have_same_meaning'], index_col=0)
 test = pd.read_csv("./test.csv", names=['row_ID', 'text_a_ID', 'text_b_ID', 'text_a_text', 'text_b_text', 'have_same_meaning'], index_col=0)
 submission_sample = pd.read_csv("./sample_submission_file.csv")
-
-
-# In[3]:
-
-
 en_stop = set(stopwords.words('english'))
 
-
-# In[4]:
-
-
 def clean(q):
+    # Adapted from https://github.com/aerdem4/kaggle-quora-dup
     q = str(q).lower()
     q = q.replace(",000,000", "m").replace(",000", "k").replace("′", "'").replace("’", "'")                           .replace("won't", "will not").replace("cannot", "can not").replace("can't", "can not")                           .replace("n't", " not").replace("what's", "what is").replace("it's", "it is")                           .replace("'ve", " have").replace("i'm", "i am").replace("'re", " are")                           .replace("he's", "he is").replace("she's", "she is").replace("'s", " own")                           .replace("%", " percent ").replace("₹", " rupee ").replace("$", " dollar ")                           .replace("€", " euro ").replace("'ll", " will")
     q = re.sub(r"([0-9]+)000000", r"\1m", q)
@@ -43,32 +25,17 @@ def clean(q):
     
     return q
 
-
-# In[5]:
-
-
 def get_longest_substring_ratio(a, b):
     strs = list(distance.lcsubstrings(a, b))
     return 0 if len(strs) == 0 else len(strs[0]) / (min(len(a), len(b)) + 1)
 
-
-# In[6]:
-
-
 def has_number(s):
-    return int(any(char.isdigit() for char in s)             or any (x in s for x in ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten",
+    return int(any(char.isdigit() for char in s)             
+               or any (x in s for x in ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten",
                                     "eleven", "twelve", "thirteen", "fourteen"]))
-
-
-# In[7]:
-
 
 def n_capital_letters(series):
     return series.apply(lambda x: sum(1 for c in x if c.isupper()))
-
-
-# In[9]:
-
 
 def preprocess(df):
     df_features = pd.DataFrame(index=df.index)
@@ -139,25 +106,11 @@ def preprocess(df):
     return df_features
 
 
-# In[10]:
-
-
 print("Compute train features...")
 train_features = preprocess(train)
 
 print("Compute test features...")
 test_features = preprocess(test)
 
-
-# In[ ]:
-
-
 train_features.to_csv("nlp_features_train.csv", index=False)
 test_features.to_csv("nlp_features_test.csv", index=False)
-
-
-# In[ ]:
-
-
-
-
