@@ -6,6 +6,7 @@ import numpy as np
 
 import re
 import networkx as nx
+import os
 
 # Load data
 train = pd.read_csv("./train.csv", names=['row_ID', 'text_a_ID', 'text_b_ID', 'text_a_text', 'text_b_text', 'have_same_meaning'], index_col=0)
@@ -15,10 +16,26 @@ submission_sample = pd.read_csv("./sample_submission_file.csv")
 train_distance_features = pd.read_csv("data/distance_features_train.csv")
 test_distance_features = pd.read_csv("data/distance_features_test.csv")
 
-weight_col = "tfidf_dist_cosine"
 
-train[weight_col] = train_distance_features[weight_col]
-test[weight_col] = test_distance_features[weight_col]
+if os.path.exists("./distance_features_train.csv") and os.path.exists("./distance_features_test.csv"):
+    print("Use tfidf dist as weights for graph.")
+    train_pred_features = pd.read_csv("./distance_features_train.csv")
+    test_pred_features = pd.read_csv("./distance_features_test.csv")
+    train["weight"] = train_pred_features["tfidf_dist_cosine"]
+    test["weight"] = test_pred_features["tfidf_dist_cosine"]
+    
+elif os.path.exists("./data/predictions_train.csv") and os.path.exists("./data/predictions_test.csv"):
+    print("Use previous predictions as weights for graph.")
+    train_pred_features = pd.read_csv("./data/predictions_train.csv")
+    test_pred_features = pd.read_csv("./data/predictions_train.csv")
+    train["weight"] = train_pred_features["weight"]
+    test["weight"] = test_pred_features["weight"]
+    
+else:
+    print("Use uniform weights for graph.")
+    train["weight"] = 1
+    test["weight"] = 1
+
 
 # Hyperparameters
 max_freq = 50
@@ -40,7 +57,7 @@ def shortestPathShortness(row):
             sps = 0
     except nx.NetworkXNoPath:
         sps=0
-    g.add_edge(row['text_a_ID'], row['text_b_ID'], weight=row[weight_col])
+    g.add_edge(row['text_a_ID'], row['text_b_ID'], weight=row["weight"])
     return sps
 
 def get_neighbors(qid):
@@ -55,7 +72,7 @@ def get_neighbors(qid):
 
 print("Build Graph...")
 nodes = pd.concat([train.text_a_ID, train.text_b_ID, test.text_a_ID,test.text_b_ID]).values
-edges = pd.concat([train[["text_a_ID", "text_b_ID", weight_col]], test[["text_a_ID", "text_b_ID", weight_col]]]).values
+edges = pd.concat([train[["text_a_ID", "text_b_ID", "weight"]], test[["text_a_ID", "text_b_ID", "weight"]]]).values
 
 g = nx.Graph()
 g.add_nodes_from(nodes)
