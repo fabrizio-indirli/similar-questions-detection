@@ -1,9 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[1]:
-
-
 import pandas as pd
 import numpy as np
 
@@ -17,25 +11,13 @@ from nltk.stem.porter import PorterStemmer
 from fuzzywuzzy import fuzz
 import distance
 
-
-# In[2]:
-
-
-train = pd.read_csv("./train.csv", names=['row_ID', 'text_a_ID', 'text_b_ID', 'text_a_text', 'text_b_text', 'have_same_meaning'], index_col=0)
-test = pd.read_csv("./test.csv", names=['row_ID', 'text_a_ID', 'text_b_ID', 'text_a_text', 'text_b_text', 'have_same_meaning'], index_col=0)
+train = pd.read_csv("./data/train.csv", names=['row_ID', 'text_a_ID', 'text_b_ID', 'text_a_text', 'text_b_text', 'have_same_meaning'], index_col=0)
+test = pd.read_csv("./data/test.csv", names=['row_ID', 'text_a_ID', 'text_b_ID', 'text_a_text', 'text_b_text', 'have_same_meaning'], index_col=0)
 submission_sample = pd.read_csv("./sample_submission_file.csv")
-
-
-# In[3]:
-
-
 en_stop = set(stopwords.words('english'))
 
-
-# In[4]:
-
-
 def clean(q):
+    # Adapted from https://github.com/aerdem4/kaggle-quora-dup
     q = str(q).lower()
     q = q.replace(",000,000", "m").replace(",000", "k").replace("′", "'").replace("’", "'")                           .replace("won't", "will not").replace("cannot", "can not").replace("can't", "can not")                           .replace("n't", " not").replace("what's", "what is").replace("it's", "it is")                           .replace("'ve", " have").replace("i'm", "i am").replace("'re", " are")                           .replace("he's", "he is").replace("she's", "she is").replace("'s", " own")                           .replace("%", " percent ").replace("₹", " rupee ").replace("$", " dollar ")                           .replace("€", " euro ").replace("'ll", " will")
     q = re.sub(r"([0-9]+)000000", r"\1m", q)
@@ -43,32 +25,17 @@ def clean(q):
     
     return q
 
-
-# In[5]:
-
-
 def get_longest_substring_ratio(a, b):
     strs = list(distance.lcsubstrings(a, b))
     return 0 if len(strs) == 0 else len(strs[0]) / (min(len(a), len(b)) + 1)
 
-
-# In[6]:
-
-
 def has_number(s):
-    return int(any(char.isdigit() for char in s)             or any (x in s for x in ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten",
+    return int(any(char.isdigit() for char in s)             
+               or any (x in s for x in ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten",
                                     "eleven", "twelve", "thirteen", "fourteen"]))
-
-
-# In[7]:
-
 
 def n_capital_letters(series):
     return series.apply(lambda x: sum(1 for c in x if c.isupper()))
-
-
-# In[9]:
-
 
 def preprocess(df):
     df_features = pd.DataFrame(index=df.index)
@@ -111,25 +78,26 @@ def preprocess(df):
     df_features["length_diff"] = df_intermediate.apply(lambda x: abs(len(x.words_a) - len(x.words_b)), axis=1)
     df_features["avg_length"] = df_intermediate.apply(lambda x: (len(x.words_a) + len(x.words_b))/2, axis=1)
     
-#     # Number of capital letters feature
-#     df_intermediate["a_n_capital"] = n_capital_letters(df["text_a_text"])
-#     df_intermediate["b_n_capital"] = n_capital_letters(df["text_b_text"])
-#     df_features["max_n_capital"] = df_intermediate[["a_n_capital", "b_n_capital"]].max(axis=1)
-#     df_features["min_n_capital"] = df_intermediate[["a_n_capital", "b_n_capital"]].min(axis=1)
-#     df_features["n_capital_diff"] = np.abs(df_intermediate["a_n_capital"] - df_intermediate["b_n_capital"])
+    # Number of capital letters feature
+    df_intermediate["a_n_capital"] = n_capital_letters(df["text_a_text"])
+    df_intermediate["b_n_capital"] = n_capital_letters(df["text_b_text"])
+    df_features["max_n_capital"] = df_intermediate[["a_n_capital", "b_n_capital"]].max(axis=1)
+    df_features["min_n_capital"] = df_intermediate[["a_n_capital", "b_n_capital"]].min(axis=1)
+    df_features["n_capital_diff"] = np.abs(df_intermediate["a_n_capital"] - df_intermediate["b_n_capital"])
     
-#     # Number related features
-#     df_intermediate["a_has_number"] = df.text_a_text.apply(lambda x: has_number(x))
-#     df_intermediate["b_has_number"] = df.text_b_text.apply(lambda x: has_number(x))
-#     df_features["max_has_number"] = df_intermediate[["a_has_number", "b_has_number"]].max(axis=1)
-#     df_features["min_has_number"] = df_intermediate[["a_has_number", "b_has_number"]].min(axis=1)
+    # Number related features
+    df_intermediate["a_has_number"] = df.text_a_text.apply(lambda x: has_number(x))
+    df_intermediate["b_has_number"] = df.text_b_text.apply(lambda x: has_number(x))
+    df_features["max_has_number"] = df_intermediate[["a_has_number", "b_has_number"]].max(axis=1)
+    df_features["min_has_number"] = df_intermediate[["a_has_number", "b_has_number"]].min(axis=1)
     
+    # Adopted from https://github.com/abhishekkrthakur/is_that_a_duplicate_quora_question
     print("--> Compute fuzzy features...") 
-    #df_features['fuzz_qratio'] = df.apply(lambda x: fuzz.QRatio(str(x["text_a_text"]), str(x["text_b_text"])), axis=1)
+    df_features['fuzz_qratio'] = df.apply(lambda x: fuzz.QRatio(str(x["text_a_text"]), str(x["text_b_text"])), axis=1)
     df_features['fuzz_WRatio'] = df.apply(lambda x: fuzz.WRatio(str(x["text_a_text"]), str(x["text_b_text"])), axis=1)
     df_features['fuzz_partial_ratio'] = df.apply(lambda x: fuzz.partial_ratio(str(x["text_a_text"]), str(x["text_b_text"])), axis=1)
-    #df_features['fuzz_partial_token_set_ratio'] = df.apply(lambda x: fuzz.partial_token_set_ratio(str(x["text_a_text"]), str(x["text_b_text"])), axis=1)
-    #df_features['fuzz_partial_token_sort_ratio'] = df.apply(lambda x: fuzz.partial_token_sort_ratio(str(x["text_a_text"]), str(x["text_b_text"])), axis=1)
+    df_features['fuzz_partial_token_set_ratio'] = df.apply(lambda x: fuzz.partial_token_set_ratio(str(x["text_a_text"]), str(x["text_b_text"])), axis=1)
+    df_features['fuzz_partial_token_sort_ratio'] = df.apply(lambda x: fuzz.partial_token_sort_ratio(str(x["text_a_text"]), str(x["text_b_text"])), axis=1)
     df_features['fuzz_token_set_ratio'] = df.apply(lambda x: fuzz.token_set_ratio(str(x["text_a_text"]), str(x["text_b_text"])), axis=1)
     df_features['fuzz_token_sort_ratio'] = df.apply(lambda x: fuzz.token_sort_ratio(str(x["text_a_text"]), str(x["text_b_text"])), axis=1)
 
@@ -139,25 +107,11 @@ def preprocess(df):
     return df_features
 
 
-# In[10]:
-
-
 print("Compute train features...")
 train_features = preprocess(train)
 
 print("Compute test features...")
 test_features = preprocess(test)
 
-
-# In[ ]:
-
-
 train_features.to_csv("nlp_features_train.csv", index=False)
 test_features.to_csv("nlp_features_test.csv", index=False)
-
-
-# In[ ]:
-
-
-
-

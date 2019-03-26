@@ -13,14 +13,15 @@ import nltk
 from nltk.corpus import stopwords
 
 # Load data
-train = pd.read_csv("./train.csv", names=['row_ID', 'text_a_ID', 'text_b_ID', 'text_a_text', 'text_b_text', 'have_same_meaning'], index_col=0)
-test = pd.read_csv("./test.csv", names=['row_ID', 'text_a_ID', 'text_b_ID', 'text_a_text', 'text_b_text', 'have_same_meaning'], index_col=0)
+train = pd.read_csv("./data/train.csv", names=['row_ID', 'text_a_ID', 'text_b_ID', 'text_a_text', 'text_b_text', 'have_same_meaning'], index_col=0)
+test = pd.read_csv("./data/test.csv", names=['row_ID', 'text_a_ID', 'text_b_ID', 'text_a_text', 'text_b_text', 'have_same_meaning'], index_col=0)
 submission_sample = pd.read_csv("./sample_submission_file.csv")
 en_stop = set(stopwords.words('english'))
 glove_file = "./data/word2vec.glove.6B.100d.txt"
 
 
 def clean(q):
+    # Adapted from https://github.com/aerdem4/kaggle-quora-dup
     q = str(q).lower()
     q = q.replace(",000,000", "m").replace(",000", "k").replace("′", "'").replace("’", "'")                           .replace("won't", "will not").replace("cannot", "can not").replace("can't", "can not")                           .replace("n't", " not").replace("what's", "what is").replace("it's", "it is")                           .replace("'ve", " have").replace("i'm", "i am").replace("'re", " are")                           .replace("he's", "he is").replace("she's", "she is").replace("'s", " own")                           .replace("%", " percent ").replace("₹", " rupee ").replace("$", " dollar ")                           .replace("€", " euro ").replace("'ll", " will")
     q = re.sub(r"([0-9]+)000000", r"\1m", q)
@@ -122,7 +123,7 @@ def preprocess(df):
     
     print("--> Compute word2vec distance...")
     word2Vec_emb_a = df_intermediate["words_clean_a"].apply(lambda q: np.array([word2Vec.wv[w] for w in q if w in word2Vec.wv]))
-    word2Vec_emb_b = df_intermediate["words_cleWordNetLemmatizeran_b"].apply(lambda q: np.array([word2Vec.wv[w] for w in q if w in word2Vec.wv]))
+    word2Vec_emb_b = df_intermediate["words_clean_b"].apply(lambda q: np.array([word2Vec.wv[w] for w in q if w in word2Vec.wv]))
 
     word2Vec_emb_a[word2Vec_emb_a.apply(lambda x: len(x)==0)] = word2Vec_emb_a[word2Vec_emb_a.apply(lambda x: len(x)==0)].apply(lambda y: np.zeros((1,100)))
     word2Vec_emb_b[word2Vec_emb_b.apply(lambda x: len(x)==0)] = word2Vec_emb_b[word2Vec_emb_b.apply(lambda x: len(x)==0)].apply(lambda y: np.zeros((1,100)))
