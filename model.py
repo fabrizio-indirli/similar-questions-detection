@@ -220,7 +220,7 @@ for word, i in word_index.items():
         embedding_matrix[i] = embedding_vector
 
         
-kfold = StratifiedKFold(n_splits=2, shuffle=True)
+kfold = StratifiedKFold(n_splits=n_folds, shuffle=True)
 model_count = 0
 
 train_ensemble = pd.DataFrame(index=train.index)
@@ -251,7 +251,7 @@ for train_indices, validation_indices in kfold.split(train["have_same_meaning"],
 
     hist = model.fit([train_fold_a, train_fold_b, train_fold_features], train_fold_labels,
                      validation_data=([val_fold_a, val_fold_b, val_fold_features], val_fold_labels),
-                     epochs=1, batch_size=BATCH_SIZE, shuffle=True,
+                     epochs=50, batch_size=BATCH_SIZE, shuffle=True,
                      callbacks=[early_stopping, model_checkpoint], verbose=1)
 
     model.load_weights(best_model_path)
