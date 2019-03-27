@@ -23,7 +23,7 @@ from nltk.corpus import stopwords
 np.random.seed(0)
 
 min_occurence = 100
-unknown = "memento"
+unknown = "leptodactylidae"
 embedding_dim = 300
 max_sequence = 30
 batch_size = 1025
