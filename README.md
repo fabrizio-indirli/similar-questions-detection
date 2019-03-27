@@ -15,7 +15,7 @@ The code can be run using the following steps: <br>
 	```
 	python -m gensim.scripts.glove2word2vec --input  ./data/glove.840B.300d.txt --output glove.840B.300d.w2vformat.txt
 	```
-	b. Otherwise copy already converted glove file *glove.840B.300d.txt* to __./data/__ and rename it to *glove.840B.300d.w2vformat.txt*
+	b. Otherwise copy already converted glove file *glove.840B.300d.txt* to __./data/__ and rename it to   *glove.840B.300d.w2vformat.txt*
 
 ### Computing the features:
 3. Run: ``` python ./nlp_features.py ``` 
