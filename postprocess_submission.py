@@ -5,7 +5,7 @@ import os
 import networkx as nx
 
 n_repeats=2
-duplicate_threshold = 0.7
+duplicate_threshold = 0.5
 not_duplicate_threshold = 0.1
 maximum_update = 0.2
 upper_bound = 0.98

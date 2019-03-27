@@ -51,8 +51,8 @@ train_nlp_features = pd.read_csv("data/nlp_features_train.csv")
 train_non_nlp_features = pd.read_csv("data/non_nlp_features_train.csv")
 
 print("Load test features...")
-test_nlp_features = pd.read_csv("data/nlp_features_train.csv")
-test_non_nlp_features = pd.read_csv("data/non_nlp_features_train.csv")
+test_nlp_features = pd.read_csv("data/nlp_features_test.csv")
+test_non_nlp_features = pd.read_csv("data/non_nlp_features_test.csv")
 
 
 lemmatizer = WordNetLemmatizer()
@@ -62,14 +62,19 @@ def lemmatize(word, lemmatizer):
         return word
     return lemmatizer.lemmatize(lemmatizer.lemmatize(word, "n"), "v")
 
-def clean(q):
-    # Adopted from https://github.com/aerdem4/kaggle-quora-dup
-    q = q.lower().replace(",000,000", "m").replace(",000", "k").replace("′", "'").replace("’", "'")         .replace("won't", "will not").replace("cannot", "can not").replace("can't", "can not")         .replace("n't", " not").replace("what's", "what is").replace("it's", "it is")         .replace("'ve", " have").replace("i'm", "i am").replace("'re", " are")         .replace("he's", "he is").replace("she's", "she is").replace("'s", " own")         .replace("%", " percent ").replace("₹", " rupee ").replace("$", " dollar ")         .replace("€", " euro ").replace("'ll", " will").replace("=", " equal ").replace("+", " plus ")
-    q = re.sub('[“”\(\'…\)\!\^\"\.;:,\-\?？\{\}\[\]\\/\*@]', ' ', q)
-    q = re.sub(r"([0-9]+)000000", r"\1m", q)
-    q = re.sub(r"([0-9]+)000", r"\1k", q)
-    q = ' '.join([lemmatize(w, lemmatizer) for w in q.split()])
-    return q
+def clean(string):
+    string = string.lower().replace(",000,000", "m").replace(",000", "k").replace("′", "'").replace("’", "'") \
+        .replace("won't", "will not").replace("cannot", "can not").replace("can't", "can not") \
+        .replace("n't", " not").replace("what's", "what is").replace("it's", "it is") \
+        .replace("'ve", " have").replace("i'm", "i am").replace("'re", " are") \
+        .replace("he's", "he is").replace("she's", "she is").replace("'s", " own") \
+        .replace("%", " percent ").replace("₹", " rupee ").replace("$", " dollar ") \
+        .replace("€", " euro ").replace("'ll", " will").replace("=", " equal ").replace("+", " plus ")
+    string = re.sub('[“”\(\'…\)\!\^\"\.;:,\-\?？\{\}\[\]\\/\*@]', ' ', string)
+    string = re.sub(r"([0-9]+)000000", r"\1m", string)
+    string = re.sub(r"([0-9]+)000", r"\1k", string)
+    string = ' '.join([lemmatize(w, lemmatizer) for w in string.split()])
+    return string
 
 def get_model(embedding_matrix, nb_words, n_features):    
     embedding_layer = Embedding(nb_words,
@@ -201,7 +206,7 @@ test_features_df["surplus_union"] = test_intermediate_df.apply(lambda x: len(x.s
 test_features_df["number_intersection"] = test_intermediate_df.apply(lambda x: len(x.number_a.intersection(x.number_b)), axis=1)
 test_features_df["number_union"] = test_intermediate_df.apply(lambda x: len(x.number_a.union(x.number_b)), axis=1)
 
-features_test = np.hstack((test_nlp_features, test_non_nlp_features, train_features_df))
+features_test = np.hstack((test_nlp_features, test_non_nlp_features, test_features_df))
 
 test_q_a_padded = pad_sequences(tokenizer.texts_to_sequences(test_q_a), maxlen=MAX_SEQUENCE_LENGTH)
 test_q_b_padded = pad_sequences(tokenizer.texts_to_sequences(test_q_a), maxlen=MAX_SEQUENCE_LENGTH)
