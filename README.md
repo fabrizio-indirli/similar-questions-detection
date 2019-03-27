@@ -11,11 +11,11 @@ The code can be run using the following steps: <br>
 ### Getting the data:
 1. Copy the train.csv and test.csv files into the data folder <br>
 2. Generate or copy GloVe vectors: <br>
-	1. If not already done, convert glove vectors from ./data/glove.840B.300d.txt to word2vec format:
+	a. If not already done, convert glove vectors from ./data/glove.840B.300d.txt to word2vec format:
 	```
 	python -m gensim.scripts.glove2word2vec --input  ./data/glove.840B.300d.txt --output glove.840B.300d.w2vformat.txt
 	```
-	2. Otherwise copy already converted glove file *glove.840B.300d.txt* to __./data/__ and rename it to *glove.840B.300d.w2vformat.txt*
+	b. Otherwise copy already converted glove file *glove.840B.300d.txt* to __./data/__ and rename it to *glove.840B.300d.w2vformat.txt*
 
 ### Computing the features:
 3. Run: ``` python ./nlp_features.py ``` 
