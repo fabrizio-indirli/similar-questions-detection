@@ -91,8 +91,6 @@ for i, (model,scale) in enumerate(models):
         train_ensemble.loc[test_indices,"predictions_" + model.__class__.__name__] = train_pred
         test_ensemble["predictions" + model.__class__.__name__] = test_pred
         
-        df = pd.DataFrame({"is_duplicate": test_pred, "Id": test.index})
-        df.to_csv("preds_" + model.__class__.__name__ + str(j) + ".csv")
         log_loss_fold.append(log_loss(y_test, train_pred))
                 
     loss = np.mean(log_loss_fold)
@@ -168,4 +166,4 @@ df_train_res.to_csv("./predictions/predictions_ensemble_train.csv")
 y_pred = bst.predict(test_ensemble, num_iteration=bst.best_iteration)
 submission = pd.DataFrame(test.index.values, columns=["Id"])
 submission["Score"] = y_pred
-submission.to_csv("submission_ensemble.csv", index=None)
+submission.to_csv("submission.csv", index=None)

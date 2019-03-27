@@ -31,7 +31,7 @@ n_folds=10
 
 
 print("Load glove embedding...")
-glove_file = "./data/word2vec.glove.840B.300d.txt"
+glove_file = "./data/glove.840B.300d.w2vformat.txt"
 glove_model = KeyedVectors.load_word2vec_format(glove_file)
 
 print("Load data...")
@@ -245,7 +245,7 @@ for train_indices, validation_indices in kfold.split(train["have_same_meaning"],
     model.compile(loss="binary_crossentropy", optimizer="nadam")
     
     early_stopping = EarlyStopping(monitor="val_loss", patience=5)
-    best_model_path = "best_model" + str(model_count) + ".h5"
+    best_model_path = "./checkpoints/best_model" + str(model_count) + ".h5"
     model_checkpoint = ModelCheckpoint(best_model_path, save_best_only=True, save_weights_only=True)
 
     hist = model.fit([train_fold_a, train_fold_b, train_fold_features], train_fold_labels,
@@ -262,8 +262,6 @@ for train_indices, validation_indices in kfold.split(train["have_same_meaning"],
     test_ensemble["pred_lstm"] = test_pred
     train_ensemble.loc[validation_indices,"pred_lstm"] = train_pred.ravel()
 
-    submission = pd.DataFrame({"Id": test.index, "Score": test_pred.ravel()})
-    submission.to_csv("predictions/preds" + str(model_count) + ".csv", index=False)
     test_predictions.append(test_pred.ravel())
     
     model_count += 1

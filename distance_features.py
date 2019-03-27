@@ -16,7 +16,7 @@ from nltk.corpus import stopwords
 train = pd.read_csv("./data/train.csv", names=['row_ID', 'text_a_ID', 'text_b_ID', 'text_a_text', 'text_b_text', 'have_same_meaning'], index_col=0)
 test = pd.read_csv("./data/test.csv", names=['row_ID', 'text_a_ID', 'text_b_ID', 'text_a_text', 'text_b_text', 'have_same_meaning'], index_col=0)
 en_stop = set(stopwords.words('english'))
-glove_file = "./data/word2vec.glove.840B.300d.txt"
+glove_file = "./data/glove.840B.300d.w2vformat.txt"
 
 
 def clean(q):
