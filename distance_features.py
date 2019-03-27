@@ -158,7 +158,6 @@ def preprocess(df):
     print("--> Compute edit distance...")
     df_features["edit_distance"] = df_intermediate.apply(lambda x: nltk.edit_distance(x["clean_a"], x["clean_b"]), axis=1)
         
-    
     return df_features
 
 
@@ -168,5 +167,6 @@ train_features = preprocess(train)
 print("Compute test features...")
 test_features = preprocess(test)
 
-train_features.to_csv("distance_features_train.csv", index=False)
-test_features.to_csv("distance_features_test.csv", index=False)
+print("Store features...")
+train_features.to_csv("./data/distance_features_train.csv", index=False)
+test_features.to_csv("./data/distance_features_test.csv", index=False)

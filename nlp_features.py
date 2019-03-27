@@ -113,5 +113,6 @@ train_features = preprocess(train)
 print("Compute test features...")
 test_features = preprocess(test)
 
-train_features.to_csv("nlp_features_train.csv", index=False)
-test_features.to_csv("nlp_features_test.csv", index=False)
+print("Store features...")
+train_features.to_csv("./data/nlp_features_train.csv", index=False)
+test_features.to_csv("./data/nlp_features_test.csv", index=False)

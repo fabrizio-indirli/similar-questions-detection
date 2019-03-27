@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
 import pandas as pd
 import numpy as np
 
@@ -13,21 +10,18 @@ train = pd.read_csv("./data/train.csv", names=['row_ID', 'text_a_ID', 'text_b_ID
 test = pd.read_csv("./data/test.csv", names=['row_ID', 'text_a_ID', 'text_b_ID', 'text_a_text', 'text_b_text', 'have_same_meaning'], index_col=0)
 submission_sample = pd.read_csv("./sample_submission_file.csv")
 
-train_distance_features = pd.read_csv("data/distance_features_train.csv")
-test_distance_features = pd.read_csv("data/distance_features_test.csv")
-
-
-if os.path.exists("./distance_features_train.csv") and os.path.exists("./distance_features_test.csv"):
+# Load weights for graph depending on which file is available
+if os.path.exists("./data/distance_features_train.csv") and os.path.exists("./data/distance_features_test.csv"):
     print("Use tfidf dist as weights for graph.")
-    train_pred_features = pd.read_csv("./distance_features_train.csv")
-    test_pred_features = pd.read_csv("./distance_features_test.csv")
+    train_pred_features = pd.read_csv("./data/distance_features_train.csv")
+    test_pred_features = pd.read_csv("./data/distance_features_test.csv")
     train["weight"] = train_pred_features["tfidf_dist_cosine"]
     test["weight"] = test_pred_features["tfidf_dist_cosine"]
     
-elif os.path.exists("./data/predictions_train.csv") and os.path.exists("./data/predictions_test.csv"):
+elif os.path.exists("./predictions/predictions_ensemble_train.csv") and os.path.exists("./predictions/predictions_ensemble_test.csv"):
     print("Use previous predictions as weights for graph.")
-    train_pred_features = pd.read_csv("./data/predictions_train.csv")
-    test_pred_features = pd.read_csv("./data/predictions_train.csv")
+    train_pred_features = pd.read_csv("./predictions/predictions_ensemble_train.csv")
+    test_pred_features = pd.read_csv("./predictions/predictions_ensemble_test.csv")
     train["weight"] = train_pred_features["weight"]
     test["weight"] = test_pred_features["weight"]
     
@@ -40,7 +34,7 @@ else:
 # Hyperparameters
 max_freq = 50
 max_neighbors = 30
-n_k_cores = 11
+n_k_cores = 12
 max_level = 3
 
 # Start computation
@@ -76,7 +70,6 @@ edges = pd.concat([train[["text_a_ID", "text_b_ID", "weight"]], test[["text_a_ID
 
 g = nx.Graph()
 g.add_nodes_from(nodes)
-#g.add_edges_from(edges)
 for e in edges:
     g.add_edge(int(e[0]), int(e[1]), weight=e[2])
 g.remove_edges_from(g.selfloop_edges())
@@ -176,7 +169,6 @@ def preprocess(df):
     df_features["eigenvector_centrality_min"] = df_intermediate[["eigenvector_centrality_a", "eigenvector_centrality_b"]].min(axis=1).apply(lambda x: min(x,100))
     df_features["eigenvector_centrality_max"] = df_intermediate[["eigenvector_centrality_a", "eigenvector_centrality_b"]].max(axis=1).apply(lambda x: min(x,100))
     
-    
     return df_features
 
 print("Compute train features...")
@@ -185,6 +177,6 @@ train_features = preprocess(train)
 print("Compute test features...")
 test_features = preprocess(test)
 
-
-train_features.to_csv("non_nlp_features_train.csv", index=False)
-test_features.to_csv("non_nlp_features_test.csv", index=False)
+print("Store features...")
+train_features.to_csv("./data/graph_features_train.csv", index=False)
+test_features.to_csv("./data/graph_features_test.csv", index=False)

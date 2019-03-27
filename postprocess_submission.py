@@ -4,7 +4,7 @@ import pandas as pd
 import os
 import networkx as nx
 
-n_repeats=2
+n_repeats = 2
 duplicate_threshold = 0.5
 not_duplicate_threshold = 0.1
 maximum_update = 0.2
@@ -19,6 +19,8 @@ submission_sample = pd.read_csv("./sample_submission_file.csv")
 submission = pd.read_csv("./predictions/submission.csv")
 test_predictions = submission.Score.values
 
+# Idea adopted from https://github.com/aerdem4/kaggle-quora-dup
+# If neighbors are duplicates based on labels or predictions node is also most likely duplicate
 for i in range(n_repeats):
     nodes = pd.concat([train.text_a_ID, train.text_b_ID, test.text_a_ID,test.text_b_ID]).values
     edges = pd.concat([train.loc[train.have_same_meaning==1, ["text_a_ID", "text_b_ID"]], test.loc[test_predictions > duplicate_threshold, ["text_a_ID", "text_b_ID"]]]).values
@@ -35,6 +37,7 @@ for i in range(n_repeats):
             count +=1       
     print("Updated {} predictions".format(count))
 
+# If neighbors are not duplicates based on labels or predictions node is also most likely not duplicate
 for i in range(n_repeats):
     nodes = pd.concat([train.text_a_ID, train.text_b_ID, test.text_a_ID,test.text_b_ID]).values
     edges = pd.concat([train.loc[train.have_same_meaning==0, ["text_a_ID", "text_b_ID"]], test.loc[test_predictions < not_duplicate_threshold, ["text_a_ID", "text_b_ID"]]]).values
@@ -53,4 +56,3 @@ for i in range(n_repeats):
 
 submission = pd.DataFrame({"Id":submission.Id, "Score":test_predictions})
 submission.to_csv("predictions/postprocessed_submission.csv", index=False)
-
