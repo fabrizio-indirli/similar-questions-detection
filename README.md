@@ -11,7 +11,7 @@ The code can be run using the following steps: <br>
 ### Getting the data:
 1. Copy the train.csv and test.csv files into the data folder  
 2. Generate or copy GloVe vectors:  
-	a. If not already done, download the GloVe *840B-300d* file from [here](http://nlp.stanford.edu/data/glove.840B.300d.zip), put it in *./data/glove.840B.300d.txt* and convert glove vectors to word2vec format:  
+	a. If not already done, download the GloVe *840B-300d* file from [here](http://nlp.stanford.edu/data/glove.840B.300d.zip), put it in __/data/__ and convert it to word2vec format:  
 	```
 	python -m gensim.scripts.glove2word2vec --input  ./data/glove.840B.300d.txt --output glove.840B.300d.w2vformat.txt
 	```
