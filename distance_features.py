@@ -93,8 +93,8 @@ def preprocess(df):
     glove_emb_a = df_intermediate["words_clean_a"].apply(lambda q: np.array([glove_model.wv[w] for w in q if w in glove_model.wv]))
     glove_emb_b = df_intermediate["words_clean_b"].apply(lambda q: np.array([glove_model.wv[w] for w in q if w in glove_model.wv]))
 
-    glove_emb_a[glove_emb_a.apply(lambda x: len(x)==0)] = glove_emb_a[glove_emb_a.apply(lambda x: len(x)==0)].apply(lambda y: np.zeros((1,100)))
-    glove_emb_b[glove_emb_b.apply(lambda x: len(x)==0)] = glove_emb_b[glove_emb_b.apply(lambda x: len(x)==0)].apply(lambda y: np.zeros((1,100)))
+    glove_emb_a[glove_emb_a.apply(lambda x: len(x)==0)] = glove_emb_a[glove_emb_a.apply(lambda x: len(x)==0)].apply(lambda y: np.zeros((1,300)))
+    glove_emb_b[glove_emb_b.apply(lambda x: len(x)==0)] = glove_emb_b[glove_emb_b.apply(lambda x: len(x)==0)].apply(lambda y: np.zeros((1,300)))
     glove_emb_a = glove_emb_a.apply(lambda x: np.mean(x,axis=0))
     glove_emb_b = glove_emb_b.apply(lambda x: np.mean(x,axis=0))
     glove_emb_a = np.vstack(glove_emb_a.values)
