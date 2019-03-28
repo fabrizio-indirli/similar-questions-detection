@@ -21,18 +21,15 @@ The code can be run using the following steps: <br>
 ``` pip install -r requirements.txt ```
 
 ### Computing the features:
-3. Run: ``` python ./nlp_features.py ``` 
-4. Run: ``` python ./distance_features.py``` 
-5. Run: ``` python ./graph_features.py```
+Run: ``` python ./build_features.py ``` 
 
 ### Predicting:
 
 #### To get the results using the LSTM:
-6. Run: ```python ./lstm_model.py```
-7. Run: ```python ./postprocess_submission.py```  
+Run: ```python ./lstm_model.py```
+ 
 The final submission is in the __predictions__ folder and called *postprocessed_submission.csv*
 
 #### To get the results using the ensemble (if the ensemble should include the LSTM first run the lstm_model.py):  
-8. Run: ```python ./cross_validation_ensemble.py```  
-9. Run: ```python ./postprocess_submission.py```  
+Run: ```python ./cross_validation_ensemble.py```  
 The final submission is in the __predictions__ folder and called *postprocessed_submission.csv*
