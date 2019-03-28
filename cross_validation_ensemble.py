@@ -21,7 +21,10 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.svm import SVC
 from scripts.lgbmHelper import LGBMHelper
 from scripts.xgbHelper import XGBHelper
-from scripts.postprocess_submission import postprocess
+import sys
+
+sys.path.insert(0, './scripts/')
+from postprocess_submission import postprocess
 
 # Load data
 train_all = pd.read_csv("./data/train.csv", names=['row_ID', 'text_a_ID', 'text_b_ID', 'text_a_text', 'text_b_text', 'have_same_meaning'], index_col=0)
