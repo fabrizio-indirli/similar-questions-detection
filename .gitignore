@@ -2,3 +2,6 @@ report/*
 .fuse_hidden0000006300000001
 non_nlp_features_train.csv
 non_nlp_features_test.csv
+scripts/__pycache__/nlp_features.cpython-36.pyc
+scripts/__pycache__/distance_features.cpython-36.pyc
+scripts/__pycache__/graph_features.cpython-36.pyc

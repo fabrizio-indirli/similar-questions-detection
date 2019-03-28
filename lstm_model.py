@@ -19,6 +19,7 @@ from keras.preprocessing.sequence import pad_sequences
 from keras.callbacks import EarlyStopping, ModelCheckpoint
 
 from nltk.corpus import stopwords
+from scripts.postprocess_submission import postprocess
 
 np.random.seed(0)
 
@@ -275,3 +276,8 @@ test_predictions = np.mean(test_predictions, axis=0)
 
 submission = pd.DataFrame({"Id":test.index, "Score":test_predictions})
 submission.to_csv("predictions/submission.csv", index=False)
+
+# post-process
+print(" ")
+print("POST PROCESSING")
+postprocess()

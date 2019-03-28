@@ -21,6 +21,7 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.svm import SVC
 from scripts.lgbmHelper import LGBMHelper
 from scripts.xgbHelper import XGBHelper
+from scripts.postprocess_submission import postprocess
 
 # Load data
 train_all = pd.read_csv("./data/train.csv", names=['row_ID', 'text_a_ID', 'text_b_ID', 'text_a_text', 'text_b_text', 'have_same_meaning'], index_col=0)
@@ -167,3 +168,8 @@ y_pred = bst.predict(test_ensemble, num_iteration=bst.best_iteration)
 submission = pd.DataFrame(test.index.values, columns=["Id"])
 submission["Score"] = y_pred
 submission.to_csv("submission.csv", index=None)
+
+# Post-process
+print(" ")
+print("POST PROCESSING")
+postprocess()
